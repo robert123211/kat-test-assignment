@@ -1,3 +1,19 @@
 {
-  "extends": "./node_modules/gts/"
+  "extends": "./node_modules/gts/",
+  "rules": {
+    "node/no-unpublished-import": ["error",
+      {
+        "allowModules": [
+          "cypress",
+          "@badeball/cypress-cucumber-preprocessor",
+          "@faker-js/faker"
+        ]
+      }],
+    "node/no-unpublished-require": ["error",
+      {
+        "allowModules": [
+          "@bahmutov/cypress-esbuild-preprocessor"
+        ]
+      }]
+  }
 }
