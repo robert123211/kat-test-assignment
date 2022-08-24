@@ -22,6 +22,7 @@ async function setupNodeEvents(
 
 export default defineConfig({
   defaultCommandTimeout: 15000,
+  requestTimeout: 15000,
   watchForFileChanges: false,
   e2e: {
     baseUrl: 'https://katanamrp.com/login/',

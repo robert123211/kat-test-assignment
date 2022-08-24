@@ -1,6 +1,7 @@
 import {faker} from '@faker-js/faker';
 
 export const generateCustomerData = function (): {
+  id?: number;
   zip: string;
   lastName: string;
   country: string;
@@ -32,4 +33,27 @@ export const generateCustomerData = function (): {
     zip: faker.address.zipCode(),
     country: faker.address.country(),
   };
+};
+
+export const assertCustomerInputValue = function (
+  selector: string,
+  expectedValue: string,
+  queryInputFromDiv = true
+): void {
+  if (queryInputFromDiv) {
+    cy.get(selector)
+      .should('be.visible')
+      .find('input')
+      .invoke('val')
+      .then(actualValue => {
+        expect(actualValue).to.eq(expectedValue);
+      });
+  } else {
+    cy.get(selector)
+      .should('be.visible')
+      .invoke('val')
+      .then(actualValue => {
+        expect(actualValue).to.eq(expectedValue);
+      });
+  }
 };
