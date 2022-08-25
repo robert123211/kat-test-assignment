@@ -6,7 +6,8 @@
     "@types/node": "^14.11.2",
     "cypress": "latest",
     "gts": "^3.1.0",
-    "typescript": "latest"
+    "typescript": "latest",
+    "cypress-localstorage-commands": "^2.1.0"
   },
   "cypress-cucumber-preprocessor": {
     "stepDefinitions": "cypress/e2e/common/**/**.ts",

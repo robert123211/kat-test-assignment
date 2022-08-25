@@ -21,6 +21,9 @@ export class CustomerForm {
   readonly billingAdrInput: string;
   readonly extendedGrid: string;
   readonly saveBillingAdrBtn: string;
+  readonly moreBtn: string;
+  readonly deleteCustomerBtn: string;
+  readonly confirmDeleteBtn: string;
 
   constructor() {
     this.firstNameInput = '[data-testid="inputCustomerFirstName"]';
@@ -43,6 +46,9 @@ export class CustomerForm {
     this.zipInput = 'input[name="zip"]';
     this.countryInput = 'input[name="country"]';
     this.saveBillingAdrBtn = '[data-testid="submitButton"]';
+    this.deleteCustomerBtn = '[data-testid="cardHeaderMenuButtonDELETE"]';
+    this.moreBtn = 'span.print-hide'; // should add a better selector into the UI
+    this.confirmDeleteBtn = '[data-testid="confirmDeleteButton"]';
   }
 
   fillCustomerData(customer: {
@@ -98,13 +104,19 @@ export class CustomerForm {
       cy.get(this.billingAdrPhoneInput).type(customer.phone);
     });
     cy.get(this.addressLine2Input).type(customer.addressLine2);
-    cy.get(this.cityInput).focus().type(customer.city);
-    cy.get(this.stateInput).focus().type(customer.state);
-    cy.get(this.zipInput).focus().type(customer.zip);
-    cy.get(this.countryInput).focus().type(customer.country);
+    cy.get(this.cityInput).type(customer.city);
+    cy.get(this.stateInput).type(customer.state);
+    cy.get(this.zipInput).type(customer.zip);
+    cy.get(this.countryInput).type(customer.country);
     cy.get(this.addressLine1Input).type(`${customer.addressLine1}`);
     cy.get(this.saveBillingAdrBtn).click();
     cy.wait('@customerPATCH');
+  }
+
+  deleteCustomer() {
+    cy.get(this.moreBtn).click();
+    cy.get(this.deleteCustomerBtn).click();
+    cy.get(this.confirmDeleteBtn).click();
   }
 
   assertCustomerDataCorrectness(customer: {

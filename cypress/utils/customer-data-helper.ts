@@ -1,5 +1,23 @@
 import {faker} from '@faker-js/faker';
 
+export const generateCustomerBodyForPostRequest = function (): {
+  firstName: string;
+  lastName: string;
+  name: string;
+  company: string;
+  email: string;
+} {
+  const firstName = faker.name.firstName();
+  const lastName = faker.name.lastName();
+  return {
+    firstName: firstName,
+    lastName: lastName,
+    name: `${firstName} ${lastName}`,
+    company: faker.company.name(),
+    email: faker.internet.email(),
+  };
+};
+
 export const generateCustomerData = function (): {
   id?: number;
   zip: string;

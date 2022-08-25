@@ -21,11 +21,11 @@ async function setupNodeEvents(
 }
 
 export default defineConfig({
-  defaultCommandTimeout: 15000,
-  requestTimeout: 15000,
+  defaultCommandTimeout: 30000,
+  requestTimeout: 30000,
   watchForFileChanges: false,
   e2e: {
-    baseUrl: 'https://katanamrp.com/login/',
+    baseUrl: 'https://factory.katanamrp.com/',
     supportFile: 'cypress/support/e2e.ts',
     specPattern: '**/*.feature',
     setupNodeEvents,

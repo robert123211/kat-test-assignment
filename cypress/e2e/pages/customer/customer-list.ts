@@ -1,10 +1,37 @@
 export class CustomerList {
   readonly customerNameFilter: string;
+  readonly customerEmailFilter: string;
+  readonly customerPhoneFilter: string;
+  readonly customerCommentFilter: string;
   readonly customerNameCell: string;
 
   constructor() {
     this.customerNameFilter = '[data-testid="nameFilterInput"]';
+    this.customerEmailFilter = '[data-testid="emailFilterInput"]';
+    this.customerPhoneFilter = '[data-testid="phoneFilterInput"]';
+    this.customerCommentFilter = '[data-testid="commentFilterInput"]';
     this.customerNameCell = '[data-testid="cellName"]';
+  }
+
+  filterCustomers(column: string, searchPhrase: string) {
+    let selector: string;
+    switch (column) {
+      case 'Name':
+        selector = this.customerNameFilter;
+        break;
+      case 'Email':
+        selector = this.customerEmailFilter;
+        break;
+      case 'Phone':
+        selector = this.customerPhoneFilter;
+        break;
+      case 'Comment':
+        selector = this.customerCommentFilter;
+        break;
+      default:
+        break;
+    }
+    cy.get(selector!).type(searchPhrase);
   }
 
   assertCustomerExists(customer: {
@@ -29,7 +56,7 @@ export class CustomerList {
     }).as('getCustomers');
     cy.wait('@getCustomers');
     const customerRow = `[row-id="${customer.id}"]`;
-    cy.get(this.customerNameFilter).type(customer.displayName);
+    this.filterCustomers(this.customerNameFilter, customer.displayName);
     cy.get(customerRow)
       .should('contain', customer.displayName)
       .should('contain', customer.email)
@@ -40,5 +67,12 @@ export class CustomerList {
   goToCustomerDetailedView(customerId: number | undefined) {
     const customerRow = `[row-id="${customerId}"]`;
     cy.get(customerRow).filter(':visible').find(this.customerNameCell).click();
+    cy.contains('All changes saved').should('be.visible');
+  }
+
+  assertCustomerFilterHasNoResults() {
+    cy.get(this.customerNameFilter).should('be.visible');
+    cy.contains('Loading').should('not.exist');
+    cy.get(this.customerNameCell).should('not.exist');
   }
 }

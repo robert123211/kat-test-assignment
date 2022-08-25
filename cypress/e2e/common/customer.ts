@@ -1,6 +1,9 @@
-import {When, Then} from '@badeball/cypress-cucumber-preprocessor';
+import {When, Then, Given} from '@badeball/cypress-cucumber-preprocessor';
 import {Header} from '../pages/header';
-import {generateCustomerData} from '../../utils/customer-data-helper';
+import {
+  generateCustomerBodyForPostRequest,
+  generateCustomerData,
+} from '../../utils/customer-data-helper';
 import {CustomerForm} from '../pages/customer/customer-form';
 import {CustomerList} from '../pages/customer/customer-list';
 import undefinedError = Mocha.utils.undefinedError;
@@ -28,4 +31,33 @@ Then(/^customer should have correct values in the detailed view$/, () => {
   } else {
     throw undefinedError();
   }
+});
+Given(/^user has created a customer through API$/, () => {
+  const customerBody = generateCustomerBodyForPostRequest();
+  cy.get('@authObj').then(obj => {
+    cy.request({
+      method: 'POST',
+      url: 'https://customers.katanamrp.com/api/customers',
+      body: customerBody,
+      headers: {
+        authorization: `Bearer ${JSON.parse(obj).token}`,
+      },
+    }).as('customerPostReq');
+  });
+});
+When(/^clicks delete customer$/, () => {
+  customerForm.deleteCustomer();
+});
+Then(/^customer should be deleted$/, () => {
+  customers.assertCustomerFilterHasNoResults();
+});
+
+When(/^user goes to customers list view$/, () => {
+  header.goToContactsTab();
+});
+When(/^clicks on the created customer$/, () => {
+  cy.get('@customerPostReq').then(req => {
+    customers.filterCustomers('Name', req.body.name);
+    customers.goToCustomerDetailedView(req.body.id);
+  });
 });
