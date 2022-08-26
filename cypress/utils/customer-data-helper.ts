@@ -79,3 +79,17 @@ export const assertCustomerInputValue = function (
       });
   }
 };
+
+export const createCustomerByApi = function (): void {
+  const customerBody = generateCustomerBodyForPostRequest();
+  cy.get<string>('@authObj').then(obj => {
+    cy.request({
+      method: 'POST',
+      url: 'https://customers.katanamrp.com/api/customers',
+      body: customerBody,
+      headers: {
+        authorization: `Bearer ${JSON.parse(obj).token}`,
+      },
+    }).as('customerPostReq');
+  });
+};

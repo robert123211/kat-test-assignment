@@ -7,6 +7,8 @@ export class CustomerList {
   private readonly customerEmailCell: string;
   private readonly customerPhoneCell: string;
   private readonly customerCommentCell: string;
+  private readonly customerCheckbox: string;
+  private readonly customerDeleteConfirmBtn: string;
 
   constructor() {
     this.customerNameFilter = '[data-testid="nameFilterInput"]';
@@ -17,6 +19,8 @@ export class CustomerList {
     this.customerEmailCell = '[col-id="email"]';
     this.customerPhoneCell = '[col-id="phone"]';
     this.customerCommentCell = '[col-id="comment"]';
+    this.customerCheckbox = '[type="checkbox"]';
+    this.customerDeleteConfirmBtn = '[data-testid="confirmDeleteButton"]';
   }
 
   clearFilter(column: string) {
@@ -93,6 +97,46 @@ export class CustomerList {
     cy.get(this.customerNameFilter).should('be.visible');
     cy.contains('Loading').should('not.exist');
     cy.get(this.customerNameCell).should('not.exist');
+  }
+
+  bulkDeleteCustomers() {
+    cy.contains('Bulk actions').click();
+    cy.contains('Delete').trigger('mouseover').click();
+    cy.get(this.customerDeleteConfirmBtn).click();
+    cy.wait('@getCustomers');
+  }
+
+  selectMultipleCustomers(count: number) {
+    const selectedCustomers: {name: string; id: number}[] = [];
+    cy.get<{
+      response: {
+        body: {
+          name: string;
+          id: number;
+        }[];
+      };
+    }>('@getCustomers').then(req => {
+      cy.wrap(req).as('request');
+      for (let i = 0; i < count; i++) {
+        const customer = req.response.body[i];
+        this.filterCustomers('Name', customer.name);
+        this.selectCustomer(customer.id);
+        this.clearFilter('Name');
+        cy.wait('@getCustomers');
+        selectedCustomers.push(customer);
+      }
+      cy.wrap(selectedCustomers).as('selectedCustomers');
+    });
+  }
+
+  selectCustomer(customerId: number) {
+    const customerRow = `[row-id="${customerId}"]`;
+    cy.get(customerRow)
+      .filter(':visible')
+      .within(() => {
+        cy.get(this.customerCheckbox).check();
+        cy.get(this.customerCheckbox).should('be.checked');
+      });
   }
 
   editCustomerDetails(

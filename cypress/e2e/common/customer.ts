@@ -1,7 +1,7 @@
 import {When, Then, Given} from '@badeball/cypress-cucumber-preprocessor';
 import {Header} from '../pages/header';
 import {
-  generateCustomerBodyForPostRequest,
+  createCustomerByApi,
   generateCustomerData,
 } from '../../utils/customer-data-helper';
 import {CustomerForm} from '../pages/customer/customer-form';
@@ -33,17 +33,7 @@ When(/^user navigates to customer creation page$/, () => {
   header.clickAddNewCustomer();
 });
 Given(/^user has created a customer through API$/, () => {
-  const customerBody = generateCustomerBodyForPostRequest();
-  cy.get<string>('@authObj').then(obj => {
-    cy.request({
-      method: 'POST',
-      url: 'https://customers.katanamrp.com/api/customers',
-      body: customerBody,
-      headers: {
-        authorization: `Bearer ${JSON.parse(obj).token}`,
-      },
-    }).as('customerPostReq');
-  });
+  createCustomerByApi();
 });
 When(/^clicks delete customer$/, () => {
   customerForm.deleteCustomer();
@@ -132,5 +122,30 @@ When(/^edits the created customer values in the list view$/, () => {
     newCustomerData.id = req.body.id;
     customers.filterCustomers('Name', req.body.name);
     customers.editCustomerDetails(req.body.id, newCustomerData);
+  });
+});
+Given(/^user has created (\d+) customers$/, (count: number) => {
+  for (let i = 0; i < count; i++) {
+    createCustomerByApi();
+  }
+});
+When(/^selects (\d+) customers$/, (count: number) => {
+  customers.selectMultipleCustomers(count);
+});
+When(/^performs bulk delete$/, () => {
+  customers.bulkDeleteCustomers();
+});
+Then(/^customers should not be visible in the customer list view$/, () => {
+  cy.get<
+    {
+      name: string;
+      id: number;
+    }[]
+  >('@selectedCustomers').then(selectedCustomers => {
+    selectedCustomers.forEach(selectedCustomer => {
+      customers.filterCustomers('Name', selectedCustomer.name);
+      customers.assertCustomerFilterHasNoResults();
+      customers.clearFilter('Name');
+    });
   });
 });
