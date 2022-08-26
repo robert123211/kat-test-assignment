@@ -151,7 +151,9 @@ export class CustomerForm {
     cy.get(this.emailInput).find('input').clear().type('{enter}');
     this.waitForCustomerChanges();
     cy.get(this.phoneInput).find('input').clear().type('{enter}');
+    this.waitForCustomerChanges();
     cy.get(this.commentInput).find('input').clear().type('{enter}');
+    this.waitForCustomerChanges();
     if (clearBillingAddress) {
       cy.get(this.billingAdrInput).click();
       cy.get(this.removeBillingAdrBtn).click();

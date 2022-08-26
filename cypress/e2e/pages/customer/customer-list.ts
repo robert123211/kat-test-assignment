@@ -4,6 +4,9 @@ export class CustomerList {
   private readonly customerPhoneFilter: string;
   private readonly customerCommentFilter: string;
   private readonly customerNameCell: string;
+  private readonly customerEmailCell: string;
+  private readonly customerPhoneCell: string;
+  private readonly customerCommentCell: string;
 
   constructor() {
     this.customerNameFilter = '[data-testid="nameFilterInput"]';
@@ -11,6 +14,9 @@ export class CustomerList {
     this.customerPhoneFilter = '[data-testid="phoneFilterInput"]';
     this.customerCommentFilter = '[data-testid="commentFilterInput"]';
     this.customerNameCell = '[data-testid="cellName"]';
+    this.customerEmailCell = '[col-id="email"]';
+    this.customerPhoneCell = '[col-id="phone"]';
+    this.customerCommentCell = '[col-id="comment"]';
   }
 
   clearFilter(column: string) {
@@ -87,5 +93,28 @@ export class CustomerList {
     cy.get(this.customerNameFilter).should('be.visible');
     cy.contains('Loading').should('not.exist');
     cy.get(this.customerNameCell).should('not.exist');
+  }
+
+  editCustomerDetails(
+    customerId: number,
+    newCustomerValues: {
+      email: string;
+      phone: string;
+      comment: string;
+    }
+  ) {
+    const customerRow = `[row-id="${customerId}"]`;
+    cy.get(customerRow)
+      .filter(':visible')
+      .within(() => {
+        cy.get(this.customerEmailCell)
+          .click()
+          .clear()
+          .type(newCustomerValues.email);
+        cy.get(this.customerPhoneCell)
+          .click()
+          .clear()
+          .type(newCustomerValues.phone);
+      });
   }
 }

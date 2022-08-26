@@ -9,7 +9,22 @@ import {CustomerList} from '../pages/customer/customer-list';
 import undefinedError = Mocha.utils.undefinedError;
 const header = new Header();
 const customer = generateCustomerData();
-const newCustomerData = generateCustomerData();
+let newCustomerData: {
+  id?: number;
+  zip: string;
+  lastName: string;
+  country: string;
+  city: string;
+  displayName: string;
+  companyName: string;
+  firstName: string;
+  phone: string;
+  addressLine1: string;
+  comment: string;
+  addressLine2: string;
+  state: string;
+  email: string;
+};
 const customers = new CustomerList();
 const customerForm = new CustomerForm();
 
@@ -60,6 +75,7 @@ When(/^clears (.*) in the customer form$/, (wholeForm: string) => {
 });
 Then(/^customer values should be updated$/, () => {});
 When(/^fills every value in the (.*) customer form$/, (operation: string) => {
+  newCustomerData = generateCustomerData();
   switch (operation) {
     case 'edit':
       customerForm.fillCustomerData(newCustomerData, true);
@@ -102,3 +118,19 @@ Then(
     }
   }
 );
+When(/^edits the created customer values in the list view$/, () => {
+  cy.get<{
+    body: {
+      name: string;
+      id: number;
+      comment: string;
+    };
+  }>('@customerPostReq').then(req => {
+    newCustomerData = generateCustomerData();
+    newCustomerData.displayName = req.body.name;
+    newCustomerData.comment = req.body.comment;
+    newCustomerData.id = req.body.id;
+    customers.filterCustomers('Name', req.body.name);
+    customers.editCustomerDetails(req.body.id, newCustomerData);
+  });
+});

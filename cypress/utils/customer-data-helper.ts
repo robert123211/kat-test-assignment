@@ -6,6 +6,8 @@ export const generateCustomerBodyForPostRequest = function (): {
   name: string;
   company: string;
   email: string;
+  phone: string;
+  comment: string;
 } {
   const firstName = faker.name.firstName();
   const lastName = faker.name.lastName();
@@ -15,6 +17,8 @@ export const generateCustomerBodyForPostRequest = function (): {
     name: `${firstName} ${lastName}`,
     company: faker.company.name(),
     email: faker.internet.email(),
+    phone: faker.phone.number(),
+    comment: faker.lorem.sentence(5),
   };
 };
 
