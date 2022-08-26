@@ -1,29 +1,30 @@
 import {assertCustomerInputValue} from '../../../utils/customer-data-helper';
 
 export class CustomerForm {
-  readonly firstNameInput: string;
-  readonly lastNameInput: string;
-  readonly companyNameInput: string;
-  readonly displayNameInput: string;
-  readonly emailInput: string;
-  readonly phoneInput: string;
-  readonly commentInput: string;
-  readonly billingAdrFirstNameInput: string;
-  readonly billingAdrLastNameInput: string;
-  readonly billingAdrCompanyInput: string;
-  readonly billingAdrPhoneInput: string;
-  readonly addressLine1Input: string;
-  readonly addressLine2Input: string;
-  readonly cityInput: string;
-  readonly stateInput: string;
-  readonly zipInput: string;
-  readonly countryInput: string;
-  readonly billingAdrInput: string;
-  readonly extendedGrid: string;
-  readonly saveBillingAdrBtn: string;
-  readonly moreBtn: string;
-  readonly deleteCustomerBtn: string;
-  readonly confirmDeleteBtn: string;
+  private readonly firstNameInput: string;
+  private readonly lastNameInput: string;
+  private readonly companyNameInput: string;
+  private readonly displayNameInput: string;
+  private readonly emailInput: string;
+  private readonly phoneInput: string;
+  private readonly commentInput: string;
+  private readonly billingAdrFirstNameInput: string;
+  private readonly billingAdrLastNameInput: string;
+  private readonly billingAdrCompanyInput: string;
+  private readonly billingAdrPhoneInput: string;
+  private readonly addressLine1Input: string;
+  private readonly addressLine2Input: string;
+  private readonly cityInput: string;
+  private readonly stateInput: string;
+  private readonly zipInput: string;
+  private readonly countryInput: string;
+  private readonly billingAdrInput: string;
+  private readonly extendedGrid: string;
+  private readonly saveBillingAdrBtn: string;
+  private readonly moreBtn: string;
+  private readonly deleteCustomerBtn: string;
+  private readonly confirmDeleteBtn: string;
+  private readonly removeBillingAdrBtn: string;
 
   constructor() {
     this.firstNameInput = '[data-testid="inputCustomerFirstName"]';
@@ -49,24 +50,28 @@ export class CustomerForm {
     this.deleteCustomerBtn = '[data-testid="cardHeaderMenuButtonDELETE"]';
     this.moreBtn = 'span.print-hide'; // should add a better selector into the UI
     this.confirmDeleteBtn = '[data-testid="confirmDeleteButton"]';
+    this.removeBillingAdrBtn = '[data-testid="removeAddressButton"]';
   }
 
-  fillCustomerData(customer: {
-    id?: number;
-    displayName: string;
-    zip: string;
-    lastName: string;
-    country: string;
-    city: string;
-    companyName: string;
-    firstName: string;
-    phone: string;
-    addressLine1: string;
-    comment: string;
-    addressLine2: string;
-    state: string;
-    email: string;
-  }) {
+  fillCustomerData(
+    customer: {
+      id?: number;
+      displayName: string;
+      zip: string;
+      lastName: string;
+      country: string;
+      city: string;
+      companyName: string;
+      firstName: string;
+      phone: string;
+      addressLine1: string;
+      comment: string;
+      addressLine2: string;
+      state: string;
+      email: string;
+    },
+    editCustomer = false
+  ) {
     cy.intercept('POST', 'https://customers.katanamrp.com/api/customers').as(
       'customerPOST'
     );
@@ -75,27 +80,23 @@ export class CustomerForm {
       url: /^https:\/\/customers.katanamrp.com\/api\/customers/,
     }).as('customerPATCH');
     cy.get(this.firstNameInput).type(`${customer.firstName}{enter}`);
-    cy.wait('@customerPOST');
+    if (editCustomer) {
+      this.waitForCustomerChanges();
+    } else {
+      this.waitForCustomerCreation();
+    }
     cy.get(this.lastNameInput).type(`${customer.lastName}{enter}`);
-    cy.wait('@customerPATCH');
+    this.waitForCustomerChanges();
     cy.get(this.companyNameInput).type(`${customer.companyName}{enter}`);
-    cy.wait('@customerPATCH').then(req => {
-      if (req.response !== undefined) {
-        customer.id = req.response.body.id;
-      }
-    });
-    cy.get(this.displayNameInput)
-      .find('input')
-      .invoke('val')
-      .then(val => {
-        expect(val).to.eq(customer.displayName);
-      });
+    cy.get(this.displayNameInput).click();
+    cy.get('li').contains(customer.displayName).click();
+    this.waitForCustomerChanges();
     cy.get(this.emailInput).type(`${customer.email}{enter}`);
-    cy.wait('@customerPATCH');
+    this.waitForCustomerChanges();
     cy.get(this.phoneInput).type(`${customer.phone}{enter}`);
-    cy.wait('@customerPATCH');
+    this.waitForCustomerChanges();
     cy.get(this.commentInput).type(`${customer.comment}{enter}`);
-    cy.wait('@customerPATCH');
+    this.waitForCustomerChanges();
     cy.get(this.billingAdrInput).click();
     cy.get(this.extendedGrid).within(() => {
       cy.get(this.billingAdrFirstNameInput).type(customer.firstName);
@@ -110,13 +111,51 @@ export class CustomerForm {
     cy.get(this.countryInput).type(customer.country);
     cy.get(this.addressLine1Input).type(`${customer.addressLine1}`);
     cy.get(this.saveBillingAdrBtn).click();
+    cy.wait('@customerPATCH').then(req => {
+      if (req.response !== undefined) {
+        customer.id = req.response.body.id;
+      }
+    });
+    cy.contains('All changes saved').should('be.visible');
+  }
+
+  waitForCustomerChanges() {
     cy.wait('@customerPATCH');
+    cy.contains('All changes saved').should('be.visible');
+  }
+
+  waitForCustomerCreation() {
+    cy.wait('@customerPOST');
+    cy.contains('All changes saved').should('be.visible');
   }
 
   deleteCustomer() {
     cy.get(this.moreBtn).click();
     cy.get(this.deleteCustomerBtn).click();
     cy.get(this.confirmDeleteBtn).click();
+  }
+
+  clearForm(clearBillingAddress = false) {
+    cy.intercept({
+      method: 'PATCH',
+      url: /^https:\/\/customers.katanamrp.com\/api\/customers/,
+    }).as('customerPATCH');
+    cy.get(this.displayNameInput).find('input').clear().type('{enter}');
+    this.waitForCustomerChanges();
+    cy.get(this.firstNameInput).find('input').clear().type('{enter}');
+    this.waitForCustomerChanges();
+    cy.get(this.lastNameInput).find('input').clear().type('{enter}');
+    this.waitForCustomerChanges();
+    cy.get(this.companyNameInput).find('input').clear().type('{enter}');
+    this.waitForCustomerChanges();
+    cy.get(this.emailInput).find('input').clear().type('{enter}');
+    this.waitForCustomerChanges();
+    cy.get(this.phoneInput).find('input').clear().type('{enter}');
+    cy.get(this.commentInput).find('input').clear().type('{enter}');
+    if (clearBillingAddress) {
+      cy.get(this.billingAdrInput).click();
+      cy.get(this.removeBillingAdrBtn).click();
+    }
   }
 
   assertCustomerDataCorrectness(customer: {

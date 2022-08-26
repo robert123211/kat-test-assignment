@@ -9,6 +9,17 @@ Feature:
     And clicks on the created customer
     And clicks delete customer
     Then customer should be deleted
-#
-#  Scenario: User can edit a customer in the detailed view
+
+  Scenario Outline: User can edit a customer in the detailed view
+    When user goes to customers list view
+    And clicks on the created customer
+    And clears <whole_form> in the customer form
+    And fills every value in the <operation> customer form
+    Then <operation> customer operation changes should be visible in the customer list view
+    And customer should have correct values in the detailed view after <operation> operation
+
+    Examples:
+      | whole_form | operation |
+      | false      | edit      |
+
 #  Scenario: User can edit a customer in the customer list view

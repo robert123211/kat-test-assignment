@@ -1,9 +1,9 @@
 export class CustomerList {
-  readonly customerNameFilter: string;
-  readonly customerEmailFilter: string;
-  readonly customerPhoneFilter: string;
-  readonly customerCommentFilter: string;
-  readonly customerNameCell: string;
+  private readonly customerNameFilter: string;
+  private readonly customerEmailFilter: string;
+  private readonly customerPhoneFilter: string;
+  private readonly customerCommentFilter: string;
+  private readonly customerNameCell: string;
 
   constructor() {
     this.customerNameFilter = '[data-testid="nameFilterInput"]';
@@ -13,7 +13,17 @@ export class CustomerList {
     this.customerNameCell = '[data-testid="cellName"]';
   }
 
+  clearFilter(column: string) {
+    const selector = this.getFilterColumnSelector(column);
+    cy.get(selector).clear();
+  }
+
   filterCustomers(column: string, searchPhrase: string) {
+    const selector = this.getFilterColumnSelector(column);
+    cy.get(selector).type(searchPhrase);
+  }
+
+  getFilterColumnSelector(column: string): string {
     let selector: string;
     switch (column) {
       case 'Name':
@@ -31,7 +41,15 @@ export class CustomerList {
       default:
         break;
     }
-    cy.get(selector!).type(searchPhrase);
+    return selector!;
+  }
+
+  waitForCustomersApiResponse() {
+    cy.intercept({
+      method: 'GET',
+      url: /^https:\/\/customers.katanamrp.com\/api\/customers/,
+    }).as('getCustomers');
+    cy.wait('@getCustomers');
   }
 
   assertCustomerExists(customer: {
@@ -50,13 +68,8 @@ export class CustomerList {
     state: string;
     email: string;
   }) {
-    cy.intercept({
-      method: 'GET',
-      url: /^https:\/\/customers.katanamrp.com\/api\/customers/,
-    }).as('getCustomers');
-    cy.wait('@getCustomers');
     const customerRow = `[row-id="${customer.id}"]`;
-    this.filterCustomers(this.customerNameFilter, customer.displayName);
+    this.filterCustomers('Name', customer.displayName);
     cy.get(customerRow)
       .should('contain', customer.displayName)
       .should('contain', customer.email)

@@ -1,7 +1,9 @@
+import {CustomerList} from './customer/customer-list';
+
 export class Header {
-  readonly contactsBtn: string;
-  readonly globalAddBtn: string;
-  readonly addCustomerBtn: string;
+  private readonly contactsBtn: string;
+  private readonly globalAddBtn: string;
+  private readonly addCustomerBtn: string;
 
   constructor() {
     this.contactsBtn = '#contactsTab';
@@ -11,6 +13,8 @@ export class Header {
 
   goToContactsTab() {
     cy.get(this.contactsBtn).click();
+    const customers = new CustomerList();
+    customers.waitForCustomersApiResponse();
   }
 
   clickGlobalAdd() {

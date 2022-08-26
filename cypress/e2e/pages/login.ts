@@ -1,7 +1,7 @@
 export class Login {
-  readonly usernameInput: string;
-  readonly passwordInput: string;
-  readonly signInButton: string;
+  private readonly usernameInput: string;
+  private readonly passwordInput: string;
+  private readonly signInButton: string;
 
   constructor() {
     this.usernameInput = '[aria-label="Email"]';

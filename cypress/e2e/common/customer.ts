@@ -9,6 +9,7 @@ import {CustomerList} from '../pages/customer/customer-list';
 import undefinedError = Mocha.utils.undefinedError;
 const header = new Header();
 const customer = generateCustomerData();
+const newCustomerData = generateCustomerData();
 const customers = new CustomerList();
 const customerForm = new CustomerForm();
 
@@ -16,25 +17,9 @@ When(/^user navigates to customer creation page$/, () => {
   header.clickGlobalAdd();
   header.clickAddNewCustomer();
 });
-When(/^fills every value in the customer form$/, () => {
-  customerForm.fillCustomerData(customer);
-});
-When(/^closes the form$/, () => {});
-Then(/^customer should be visible in the customer list view$/, () => {
-  header.goToContactsTab();
-  customers.assertCustomerExists(customer);
-});
-Then(/^customer should have correct values in the detailed view$/, () => {
-  if (customer.id !== null) {
-    customers.goToCustomerDetailedView(customer.id);
-    customerForm.assertCustomerDataCorrectness(customer);
-  } else {
-    throw undefinedError();
-  }
-});
 Given(/^user has created a customer through API$/, () => {
   const customerBody = generateCustomerBodyForPostRequest();
-  cy.get('@authObj').then(obj => {
+  cy.get<string>('@authObj').then(obj => {
     cy.request({
       method: 'POST',
       url: 'https://customers.katanamrp.com/api/customers',
@@ -56,8 +41,64 @@ When(/^user goes to customers list view$/, () => {
   header.goToContactsTab();
 });
 When(/^clicks on the created customer$/, () => {
-  cy.get('@customerPostReq').then(req => {
+  cy.get<{
+    body: {
+      name: string;
+      id: number;
+    };
+  }>('@customerPostReq').then(req => {
     customers.filterCustomers('Name', req.body.name);
     customers.goToCustomerDetailedView(req.body.id);
   });
 });
+When(/^clears (.*) in the customer form$/, (wholeForm: string) => {
+  if (wholeForm.toLowerCase() === 'true') {
+    customerForm.clearForm(true);
+  } else {
+    customerForm.clearForm();
+  }
+});
+Then(/^customer values should be updated$/, () => {});
+When(/^fills every value in the (.*) customer form$/, (operation: string) => {
+  switch (operation) {
+    case 'edit':
+      customerForm.fillCustomerData(newCustomerData, true);
+      break;
+    case 'create':
+      customerForm.fillCustomerData(customer);
+      break;
+    default:
+      break;
+  }
+});
+Then(
+  /^(.*) customer operation changes should be visible in the customer list view$/,
+  (operation: string) => {
+    let customerData;
+    header.goToContactsTab();
+    if (operation === 'create') {
+      customerData = customer;
+    } else {
+      customerData = newCustomerData;
+      customers.clearFilter('Name');
+    }
+    customers.assertCustomerExists(customerData);
+  }
+);
+Then(
+  /^customer should have correct values in the detailed view after (.*) operation$/,
+  (operation: string) => {
+    let customerData;
+    if (customer.id !== null) {
+      if (operation === 'create') {
+        customerData = customer;
+      } else {
+        customerData = newCustomerData;
+      }
+      customers.goToCustomerDetailedView(customerData.id);
+      customerForm.assertCustomerDataCorrectness(customerData);
+    } else {
+      throw undefinedError();
+    }
+  }
+);
