@@ -1,4 +1,4 @@
-Feature:
+Feature: Customer Operations
 
   Background:
     Given user is authenticated

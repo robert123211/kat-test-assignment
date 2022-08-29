@@ -1,4 +1,4 @@
-Feature:
+Feature: Customer bulk delete
 
   Background:
     Given user is authenticated

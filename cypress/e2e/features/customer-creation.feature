@@ -1,4 +1,4 @@
-Feature:
+Feature: Customer creation
 
   Background:
     Given user is authenticated

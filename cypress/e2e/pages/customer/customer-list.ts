@@ -122,7 +122,6 @@ export class CustomerList {
         this.filterCustomers('Name', customer.name);
         this.selectCustomer(customer.id);
         this.clearFilter('Name');
-        cy.wait('@getCustomers');
         selectedCustomers.push(customer);
       }
       cy.wrap(selectedCustomers).as('selectedCustomers');
