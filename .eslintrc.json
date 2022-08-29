@@ -1,0 +1,20 @@
+{
+  "extends": "./node_modules/gts/",
+  "rules": {
+    "node/no-unpublished-import": ["error",
+      {
+        "allowModules": [
+          "cypress",
+          "@badeball/cypress-cucumber-preprocessor",
+          "@faker-js/faker",
+          "cypress-localstorage-commands"
+        ]
+      }],
+    "node/no-unpublished-require": ["error",
+      {
+        "allowModules": [
+          "@bahmutov/cypress-esbuild-preprocessor"
+        ]
+      }]
+  }
+}
